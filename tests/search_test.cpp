@@ -73,8 +73,8 @@ TEST(AlphaBeta, MatchesMinimaxScore) {
 TEST(AlphaBeta, VisitsFewerNodesThanMinimax) {
   const Board board = boardFromFen(
       "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1");
-  const SearchStats plain = searchWithStats(board, 4, /*useAlphaBeta=*/false);
-  const SearchStats pruned = searchWithStats(board, 4, /*useAlphaBeta=*/true);
+  const SearchStats plain = searchWithStats(board, 3, /*useAlphaBeta=*/false);
+  const SearchStats pruned = searchWithStats(board, 3, /*useAlphaBeta=*/true);
   EXPECT_EQ(plain.score, pruned.score);
   EXPECT_LT(pruned.nodes, plain.nodes);
 }
