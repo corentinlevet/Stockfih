@@ -120,5 +120,27 @@ TEST(Castling, MakeMoveRelocatesRookAndClearsRights) {
   EXPECT_EQ(after.castlingRights(), kNoCastling);
 }
 
+TEST(Castling, CapturingRookClearsThatRight) {
+  // Black bishop b2 captures the white rook on a1, removing White's queenside right.
+  const Board board = boardFromFen("4k3/8/8/8/8/8/1b6/R3K2R b KQ - 0 1");
+  const Board after = makeMove(board, Move{makeSquare(1, 1), makeSquare(0, 0)});  // Bxa1
+  EXPECT_EQ(after.castlingRights() & kWhiteQueenSide, 0);
+  EXPECT_EQ(after.castlingRights() & kWhiteKingSide, kWhiteKingSide);
+}
+
+TEST(Promotion, UnderPromotionToKnight) {
+  const Board board = boardFromFen("8/4P3/8/8/8/8/8/8 w - - 0 1");
+  const Board after =
+      makeMove(board, Move{makeSquare(4, 6), makeSquare(4, 7), PieceType::Knight});
+  EXPECT_EQ(after.at(makeSquare(4, 7)), (Piece{PieceType::Knight, Color::White}));
+}
+
+TEST(EnPassant, TargetClearsAfterAnotherMove) {
+  // The en-passant chance must be taken immediately; any other move forfeits it.
+  const Board board = boardFromFen("8/8/8/3pP3/8/8/8/8 w - d6 0 1");
+  const Board after = makeMove(board, Move{makeSquare(4, 4), makeSquare(4, 5)});  // e5-e6
+  EXPECT_EQ(after.enPassantSquare(), kNoSquare);
+}
+
 }  // namespace
 }  // namespace stockfih

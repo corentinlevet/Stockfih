@@ -137,5 +137,19 @@ TEST(Endgame, StartingPositionIsNeither) {
   EXPECT_FALSE(isStalemate(board));
 }
 
+TEST(Endgame, SmotheredMate) {
+  // Black king on h8 hemmed in by its own rook and pawns; Nf7 delivers mate.
+  const Board board = boardFromFen("6rk/5Npp/8/8/8/8/8/7K b - - 0 1");
+  EXPECT_TRUE(isInCheck(board, Color::Black));
+  EXPECT_TRUE(isCheckmate(board));
+}
+
+TEST(Endgame, CheckButNotMate) {
+  // The black king is checked by the rook but can step off the e-file.
+  const Board board = boardFromFen("4k3/8/8/8/8/8/8/4R3 b - - 0 1");
+  EXPECT_TRUE(isInCheck(board, Color::Black));
+  EXPECT_FALSE(isCheckmate(board));
+}
+
 }  // namespace
 }  // namespace stockfih

@@ -13,6 +13,7 @@ add_executable(stockfih_tests
   evaluation_test.cpp
   search_test.cpp
   game_test.cpp
+  perft_test.cpp
 )
 
 target_link_libraries(stockfih_tests
