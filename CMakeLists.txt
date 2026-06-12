@@ -22,3 +22,9 @@ add_subdirectory(engine)
 if(STOCKFIH_BUILD_APP)
   add_subdirectory(app)
 endif()
+
+# Headless unit tests (link the engine only).
+if(STOCKFIH_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
