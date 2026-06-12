@@ -1,6 +1,7 @@
 #pragma once
 
 #include "raylib.h"
+#include "stockfih/board.hpp"
 
 namespace stockfih::gui {
 
@@ -20,5 +21,10 @@ void drawBoardSquares(const BoardLayout& layout);
 
 // Draws file letters (a-h) below and rank numbers (1-8) to the left of the board.
 void drawCoordinates(const BoardLayout& layout);
+
+// Draws every piece on `board` at its square. Pieces are placeholder discs
+// labelled with the piece letter (P/N/B/R/Q/K), colored by side; real sprite
+// textures can replace this later without touching the rest of the GUI.
+void drawPieces(const BoardLayout& layout, const Board& board);
 
 }  // namespace stockfih::gui
