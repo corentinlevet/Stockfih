@@ -77,6 +77,12 @@ void generateRookMoves(const Board& board, Square from, Color us,
   generateSlidingMoves(board, from, us, kRookDirections, moves);
 }
 
+void generateQueenMoves(const Board& board, Square from, Color us,
+                        std::vector<Move>& moves) {
+  generateSlidingMoves(board, from, us, kBishopDirections, moves);
+  generateSlidingMoves(board, from, us, kRookDirections, moves);
+}
+
 // Pawns push forward one square (two from their starting rank) and capture
 // diagonally forward onto enemy pieces. Promotion and en passant are added in
 // issue #5.
@@ -130,6 +136,9 @@ std::vector<Move> generatePseudoLegalMoves(const Board& board) {
         break;
       case PieceType::Rook:
         generateRookMoves(board, square, us, moves);
+        break;
+      case PieceType::Queen:
+        generateQueenMoves(board, square, us, moves);
         break;
       default:
         break;

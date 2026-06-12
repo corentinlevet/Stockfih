@@ -130,5 +130,11 @@ TEST(RookMoves, StopsAtFriendlyAndCapturesEnemy) {
   EXPECT_FALSE(containsMove(moves, d4, makeSquare(0, 3)));  // a4 friendly: blocked
 }
 
+TEST(QueenMoves, CenterHasTwentySevenMoves) {
+  const Board board = boardFromFen("8/8/8/8/3Q4/8/8/8 w - - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  EXPECT_EQ(countFrom(moves, makeSquare(3, 3)), 27);  // d4: 14 rook + 13 bishop
+}
+
 }  // namespace
 }  // namespace stockfih
