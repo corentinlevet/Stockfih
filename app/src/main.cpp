@@ -39,6 +39,7 @@ int main() {
     BeginDrawing();
     ClearBackground(RAYWHITE);
     stockfih::gui::drawBoardSquares(layout);
+    stockfih::gui::drawCoordinates(layout);
     EndDrawing();
 
     ++frame;

@@ -7,6 +7,12 @@ namespace {
 
 constexpr Color kLightSquare = {240, 217, 181, 255};
 constexpr Color kDarkSquare = {181, 136, 99, 255};
+constexpr int kLabelFontSize = 20;
+
+void drawCharacter(char label, int x, int y) {
+  const char text[2] = {label, '\0'};
+  DrawText(text, x, y, kLabelFontSize, DARKGRAY);
+}
 
 }  // namespace
 
@@ -27,6 +33,24 @@ void drawBoardSquares(const BoardLayout& layout) {
                     layout.squareSize, layout.squareSize,
                     light ? kLightSquare : kDarkSquare);
     }
+  }
+}
+
+void drawCoordinates(const BoardLayout& layout) {
+  const int half = layout.squareSize / 2;
+  const int boardPixels = kBoardSize * layout.squareSize;
+
+  for (int file = 0; file < kBoardSize; ++file) {
+    const int x = layout.originX + file * layout.squareSize + half - 5;
+    const int y = layout.originY + boardPixels + 6;
+    drawCharacter(static_cast<char>('a' + file), x, y);
+  }
+
+  for (int rank = 0; rank < kBoardSize; ++rank) {
+    const int x = layout.originX - 18;
+    const int y =
+        layout.originY + (kBoardSize - 1 - rank) * layout.squareSize + half - 10;
+    drawCharacter(static_cast<char>('1' + rank), x, y);
   }
 }
 

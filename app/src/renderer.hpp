@@ -18,4 +18,7 @@ struct BoardLayout {
 // Draws the 8x8 checkered board.
 void drawBoardSquares(const BoardLayout& layout);
 
+// Draws file letters (a-h) below and rank numbers (1-8) to the left of the board.
+void drawCoordinates(const BoardLayout& layout);
+
 }  // namespace stockfih::gui
