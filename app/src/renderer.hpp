@@ -1,7 +1,10 @@
 #pragma once
 
+#include <vector>
+
 #include "raylib.h"
 #include "stockfih/board.hpp"
+#include "stockfih/move.hpp"
 
 namespace stockfih::gui {
 
@@ -26,5 +29,13 @@ void drawCoordinates(const BoardLayout& layout);
 // labelled with the piece letter (P/N/B/R/Q/K), colored by side; real sprite
 // textures can replace this later without touching the rest of the GUI.
 void drawPieces(const BoardLayout& layout, const Board& board);
+
+// Outlines the selected square (if any) and marks each move's destination with
+// a dot, so the player sees where the selected piece may go.
+void drawHighlights(const BoardLayout& layout, Square selected,
+                    const std::vector<Move>& moves);
+
+// Draws a status line (e.g. "Checkmate") below the board.
+void drawStatus(const BoardLayout& layout, const char* text);
 
 }  // namespace stockfih::gui
