@@ -5,13 +5,32 @@
 namespace stockfih::gui {
 namespace {
 
-constexpr Color kLightSquare = {240, 217, 181, 255};
-constexpr Color kDarkSquare = {181, 136, 99, 255};
+// Raylib's Color struct is referenced as ::Color throughout because the engine's
+// stockfih::Color enum is also in scope here. We use explicit literals rather
+// than raylib's color macros (which expand to the bare token `Color`).
+constexpr ::Color kLightSquare = {240, 217, 181, 255};
+constexpr ::Color kDarkSquare = {181, 136, 99, 255};
+constexpr ::Color kLabelColor = {60, 60, 60, 255};
+constexpr ::Color kWhitePiece = {245, 245, 245, 255};
+constexpr ::Color kBlackPiece = {30, 30, 30, 255};
 constexpr int kLabelFontSize = 20;
 
 void drawCharacter(char label, int x, int y) {
   const char text[2] = {label, '\0'};
-  DrawText(text, x, y, kLabelFontSize, DARKGRAY);
+  DrawText(text, x, y, kLabelFontSize, kLabelColor);
+}
+
+char pieceLetter(PieceType type) {
+  switch (type) {
+    case PieceType::Pawn: return 'P';
+    case PieceType::Knight: return 'N';
+    case PieceType::Bishop: return 'B';
+    case PieceType::Rook: return 'R';
+    case PieceType::Queen: return 'Q';
+    case PieceType::King: return 'K';
+    case PieceType::None: return ' ';
+  }
+  return ' ';
 }
 
 }  // namespace
@@ -51,6 +70,33 @@ void drawCoordinates(const BoardLayout& layout) {
     const int y =
         layout.originY + (kBoardSize - 1 - rank) * layout.squareSize + half - 10;
     drawCharacter(static_cast<char>('1' + rank), x, y);
+  }
+}
+
+void drawPieces(const BoardLayout& layout, const Board& board) {
+  const float radius = static_cast<float>(layout.squareSize) * 0.38f;
+  const int fontSize = layout.squareSize / 2;
+
+  for (Square square = 0; square < kNumSquares; ++square) {
+    const Piece piece = board.at(square);
+    if (piece.isNone()) continue;
+
+    const Vector2 topLeft = squareTopLeft(layout, fileOf(square), rankOf(square));
+    const Vector2 center{topLeft.x + layout.squareSize / 2.0f,
+                         topLeft.y + layout.squareSize / 2.0f};
+
+    const bool white = piece.color == stockfih::Color::White;
+    const ::Color disc = white ? kWhitePiece : kBlackPiece;
+    const ::Color outline = white ? kBlackPiece : kWhitePiece;
+    const ::Color label = white ? kBlackPiece : kWhitePiece;
+
+    DrawCircleV(center, radius, disc);
+    DrawCircleLinesV(center, radius, outline);
+
+    const char text[2] = {pieceLetter(piece.type), '\0'};
+    const int textWidth = MeasureText(text, fontSize);
+    DrawText(text, static_cast<int>(center.x) - textWidth / 2,
+             static_cast<int>(center.y) - fontSize / 2, fontSize, label);
   }
 }
 

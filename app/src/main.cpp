@@ -3,6 +3,7 @@
 
 #include "raylib.h"
 #include "renderer.hpp"
+#include "stockfih/board.hpp"
 #include "stockfih/square.hpp"
 #include "stockfih/version.hpp"
 
@@ -31,6 +32,8 @@ int main() {
   InitWindow(windowSize, windowSize, title.c_str());
   SetTargetFPS(60);
 
+  const stockfih::Board board = stockfih::Board::startingPosition();
+
   const char* screenshot = std::getenv("STOCKFIH_SCREENSHOT");
   const int frameBudget = autoCloseFrames();
   int frame = 0;
@@ -40,6 +43,7 @@ int main() {
     ClearBackground(RAYWHITE);
     stockfih::gui::drawBoardSquares(layout);
     stockfih::gui::drawCoordinates(layout);
+    stockfih::gui::drawPieces(layout, board);
     EndDrawing();
 
     ++frame;
