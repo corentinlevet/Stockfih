@@ -43,6 +43,24 @@ TEST(Fen, ParseNoCastling) {
   EXPECT_EQ(board->castlingRights(), kNoCastling);
 }
 
+TEST(Fen, SerializeStartingPosition) {
+  EXPECT_EQ(toFen(Board::startingPosition()), std::string(kStartingFen));
+}
+
+TEST(Fen, RoundTrip) {
+  const std::string positions[] = {
+      std::string(kStartingFen),
+      "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2",
+      "r3k2r/8/8/8/8/8/8/R3K2R b Kq - 7 25",
+      "8/8/8/8/8/8/8/8 w - - 0 1",
+  };
+  for (const std::string& fen : positions) {
+    const std::optional<Board> board = parseFen(fen);
+    ASSERT_TRUE(board.has_value()) << fen;
+    EXPECT_EQ(toFen(*board), fen);
+  }
+}
+
 TEST(Fen, RejectsMalformed) {
   EXPECT_FALSE(parseFen("").has_value());
   EXPECT_FALSE(parseFen("8/8/8/8/8/8/8/8 w KQkq - 0").has_value());        // 5 fields

@@ -87,6 +87,39 @@ std::optional<int> parseNonNegativeInt(const std::string& field) {
   return std::stoi(field);
 }
 
+char pieceToChar(Piece piece) {
+  char symbol = '?';
+  switch (piece.type) {
+    case PieceType::Pawn: symbol = 'p'; break;
+    case PieceType::Knight: symbol = 'n'; break;
+    case PieceType::Bishop: symbol = 'b'; break;
+    case PieceType::Rook: symbol = 'r'; break;
+    case PieceType::Queen: symbol = 'q'; break;
+    case PieceType::King: symbol = 'k'; break;
+    case PieceType::None: return '?';
+  }
+  return piece.color == Color::White
+             ? static_cast<char>(std::toupper(static_cast<unsigned char>(symbol)))
+             : symbol;
+}
+
+std::string castlingToString(std::uint8_t rights) {
+  if (rights == kNoCastling) return "-";
+  std::string text;
+  if (rights & kWhiteKingSide) text += 'K';
+  if (rights & kWhiteQueenSide) text += 'Q';
+  if (rights & kBlackKingSide) text += 'k';
+  if (rights & kBlackQueenSide) text += 'q';
+  return text;
+}
+
+std::string squareToAlgebraic(Square square) {
+  std::string text;
+  text += static_cast<char>('a' + fileOf(square));
+  text += static_cast<char>('1' + rankOf(square));
+  return text;
+}
+
 }  // namespace
 
 std::optional<Board> parseFen(std::string_view fen) {
@@ -123,6 +156,40 @@ std::optional<Board> parseFen(std::string_view fen) {
   board.setFullmoveNumber(*fullmove);
 
   return board;
+}
+
+std::string toFen(const Board& board) {
+  std::string fen;
+
+  for (int rank = 7; rank >= 0; --rank) {
+    int empty = 0;
+    for (int file = 0; file < kBoardSize; ++file) {
+      const Piece piece = board.at(makeSquare(file, rank));
+      if (piece.isNone()) {
+        ++empty;
+        continue;
+      }
+      if (empty > 0) {
+        fen += static_cast<char>('0' + empty);
+        empty = 0;
+      }
+      fen += pieceToChar(piece);
+    }
+    if (empty > 0) fen += static_cast<char>('0' + empty);
+    if (rank > 0) fen += '/';
+  }
+
+  fen += board.sideToMove() == Color::White ? " w " : " b ";
+  fen += castlingToString(board.castlingRights());
+  fen += ' ';
+  fen += board.enPassantSquare() == kNoSquare
+             ? std::string("-")
+             : squareToAlgebraic(board.enPassantSquare());
+  fen += ' ';
+  fen += std::to_string(board.halfmoveClock());
+  fen += ' ';
+  fen += std::to_string(board.fullmoveNumber());
+  return fen;
 }
 
 }  // namespace stockfih
