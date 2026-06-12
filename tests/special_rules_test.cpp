@@ -54,5 +54,32 @@ TEST(Promotion, MakeMoveReplacesPawn) {
   EXPECT_TRUE(after.at(makeSquare(4, 6)).isNone());
 }
 
+bool containsMove(const std::vector<Move>& moves, Square from, Square to) {
+  return std::any_of(moves.begin(), moves.end(), [&](const Move& move) {
+    return move.from == from && move.to == to;
+  });
+}
+
+TEST(EnPassant, GeneratedWhenTargetSquareSet) {
+  // White pawn e5, black pawn d5, en-passant square d6.
+  const Board board = boardFromFen("8/8/8/3pP3/8/8/8/8 w - d6 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  EXPECT_TRUE(containsMove(moves, makeSquare(4, 4), makeSquare(3, 5)));  // exd6
+}
+
+TEST(EnPassant, NotGeneratedWithoutTargetSquare) {
+  const Board board = boardFromFen("8/8/8/3pP3/8/8/8/8 w - - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  EXPECT_FALSE(containsMove(moves, makeSquare(4, 4), makeSquare(3, 5)));
+}
+
+TEST(EnPassant, MakeMoveRemovesCapturedPawn) {
+  const Board board = boardFromFen("8/8/8/3pP3/8/8/8/8 w - d6 0 1");
+  const Board after = makeMove(board, Move{makeSquare(4, 4), makeSquare(3, 5)});
+  EXPECT_EQ(after.at(makeSquare(3, 5)), (Piece{PieceType::Pawn, Color::White}));  // d6
+  EXPECT_TRUE(after.at(makeSquare(3, 4)).isNone());  // d5 captured pawn gone
+  EXPECT_TRUE(after.at(makeSquare(4, 4)).isNone());  // e5 vacated
+}
+
 }  // namespace
 }  // namespace stockfih

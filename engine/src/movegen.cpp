@@ -138,6 +138,9 @@ void generatePawnMoves(const Board& board, Square from, Color us,
     const Piece occupant = board.at(target);
     if (!occupant.isNone() && occupant.color != us) {
       addPawnMove(moves, from, target, us);
+    } else if (occupant.isNone() && target == board.enPassantSquare() &&
+               board.enPassantSquare() != kNoSquare) {
+      addMove(moves, from, target);  // en passant capture
     }
   }
 }
