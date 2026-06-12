@@ -1,5 +1,6 @@
 add_library(stockfih_engine STATIC
   src/version.cpp
+  src/board.cpp
 )
 
 target_include_directories(stockfih_engine
