@@ -2,42 +2,49 @@
 #include <string>
 
 #include "raylib.h"
+#include "renderer.hpp"
+#include "stockfih/square.hpp"
 #include "stockfih/version.hpp"
 
 namespace {
 
-// When STOCKFIH_AUTOCLOSE is set, the window closes after that many frames.
-// This lets the GUI be smoke-tested without a human closing the window.
+// When STOCKFIH_AUTOCLOSE is set, the window closes after that many frames so
+// the GUI can be smoke-tested without a human closing the window.
 int autoCloseFrames() {
   if (const char* value = std::getenv("STOCKFIH_AUTOCLOSE")) {
     return std::atoi(value);
   }
-  return -1;  // disabled: run until the user closes the window
+  return -1;
 }
 
 }  // namespace
 
 int main() {
-  constexpr int kScreenWidth = 800;
-  constexpr int kScreenHeight = 600;
+  using stockfih::gui::BoardLayout;
+
+  constexpr int kMargin = 40;
+  const BoardLayout layout{kMargin, kMargin, 80};
+  const int boardPixels = stockfih::kBoardSize * layout.squareSize;
+  const int windowSize = boardPixels + 2 * kMargin;
 
   const std::string title = "Stockfih " + std::string(stockfih::version());
-  InitWindow(kScreenWidth, kScreenHeight, title.c_str());
+  InitWindow(windowSize, windowSize, title.c_str());
   SetTargetFPS(60);
 
+  const char* screenshot = std::getenv("STOCKFIH_SCREENSHOT");
   const int frameBudget = autoCloseFrames();
   int frame = 0;
 
   while (!WindowShouldClose()) {
     BeginDrawing();
     ClearBackground(RAYWHITE);
-    DrawText(title.c_str(), 20, 20, 30, DARKGRAY);
-    DrawText("raylib window is up", 20, 70, 20, GRAY);
+    stockfih::gui::drawBoardSquares(layout);
+    stockfih::gui::drawCoordinates(layout);
     EndDrawing();
 
-    if (frameBudget >= 0 && ++frame >= frameBudget) {
-      break;
-    }
+    ++frame;
+    if (screenshot != nullptr && frame == 2) TakeScreenshot(screenshot);
+    if (frameBudget >= 0 && frame >= frameBudget) break;
   }
 
   CloseWindow();
