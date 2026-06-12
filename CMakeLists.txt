@@ -17,3 +17,8 @@ include(Dependencies)
 
 # Headless chess engine -- the heart of the project, no graphics dependency.
 add_subdirectory(engine)
+
+# raylib GUI executable.
+if(STOCKFIH_BUILD_APP)
+  add_subdirectory(app)
+endif()
