@@ -14,6 +14,23 @@ void addMove(std::vector<Move>& moves, Square from, Square to) {
   moves.push_back(Move{from, to, PieceType::None});
 }
 
+bool isPromotionRank(int rank, Color us) {
+  return us == Color::White ? rank == kBoardSize - 1 : rank == 0;
+}
+
+// Adds a pawn move, expanding it into the four promotion choices when the pawn
+// reaches the last rank.
+void addPawnMove(std::vector<Move>& moves, Square from, Square to, Color us) {
+  if (isPromotionRank(rankOf(to), us)) {
+    for (const PieceType promotion : {PieceType::Queen, PieceType::Rook,
+                                      PieceType::Bishop, PieceType::Knight}) {
+      moves.push_back(Move{from, to, promotion});
+    }
+  } else {
+    addMove(moves, from, to);
+  }
+}
+
 // Single-step ("jumping") moves: each offset is tried once. A target is legal
 // if it is on the board and not occupied by a friendly piece. Used by the
 // knight and the king.
@@ -107,7 +124,7 @@ void generatePawnMoves(const Board& board, Square from, Color us,
 
   const Square ahead = makeSquare(file, nextRank);
   if (board.at(ahead).isNone()) {
-    addMove(moves, from, ahead);
+    addPawnMove(moves, from, ahead, us);
     if (rank == startRank) {
       const Square twoAhead = makeSquare(file, rank + 2 * forward);
       if (board.at(twoAhead).isNone()) addMove(moves, from, twoAhead);
@@ -119,7 +136,9 @@ void generatePawnMoves(const Board& board, Square from, Color us,
     if (!isOnBoard(captureFile, nextRank)) continue;
     const Square target = makeSquare(captureFile, nextRank);
     const Piece occupant = board.at(target);
-    if (!occupant.isNone() && occupant.color != us) addMove(moves, from, target);
+    if (!occupant.isNone() && occupant.color != us) {
+      addPawnMove(moves, from, target, us);
+    }
   }
 }
 
