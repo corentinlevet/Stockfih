@@ -1,6 +1,10 @@
 #include "stockfih/rules.hpp"
 
 #include <cstddef>
+#include <cstdlib>
+
+#include "stockfih/gamestate.hpp"
+#include "stockfih/movegen.hpp"
 
 namespace stockfih {
 namespace {
@@ -96,6 +100,33 @@ bool isInCheck(const Board& board, Color color) {
   const Square king = findKing(board, color);
   if (king == kNoSquare) return false;
   return isSquareAttacked(board, king, opposite(color));
+}
+
+std::vector<Move> generateLegalMoves(const Board& board) {
+  const Color us = board.sideToMove();
+  std::vector<Move> legal;
+
+  for (const Move& move : generatePseudoLegalMoves(board)) {
+    const Piece moving = board.at(move.from);
+
+    // Castling may not start in, pass through, or end in check. The starting
+    // and transit squares are checked here; the destination is covered by the
+    // post-move check below.
+    if (moving.type == PieceType::King &&
+        std::abs(fileOf(move.to) - fileOf(move.from)) == 2) {
+      if (isInCheck(board, us)) continue;
+      const int rank = rankOf(move.from);
+      const int transitFile = (fileOf(move.from) + fileOf(move.to)) / 2;
+      if (isSquareAttacked(board, makeSquare(transitFile, rank), opposite(us))) {
+        continue;
+      }
+    }
+
+    const Board next = makeMove(board, move);
+    if (!isInCheck(next, us)) legal.push_back(move);
+  }
+
+  return legal;
 }
 
 }  // namespace stockfih
