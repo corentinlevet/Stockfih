@@ -9,10 +9,6 @@ namespace stockfih {
 // search prefers them.
 inline constexpr int kMateScore = 1'000'000;
 
-// Static evaluation of a position in centipawns from White's perspective
-// (positive favors White). Material only for now; refined in issue #9.
-[[nodiscard]] int evaluate(const Board& board);
-
 // Minimax value of the position searched to `depth` plies, from White's
 // perspective. Equivalent to a full minimax (no pruning).
 [[nodiscard]] int minimax(const Board& board, int depth);
