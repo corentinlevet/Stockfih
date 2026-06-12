@@ -62,4 +62,22 @@ int evaluate(const Board& board) {
 
 int minimax(const Board& board, int depth) { return search(board, depth, 0); }
 
+Move findBestMove(const Board& board, int depth) {
+  const std::vector<Move> legal = generateLegalMoves(board);
+  if (legal.empty()) return Move{};
+
+  const bool maximizing = board.sideToMove() == Color::White;
+  Move best = legal.front();
+  int bestScore = maximizing ? std::numeric_limits<int>::min()
+                             : std::numeric_limits<int>::max();
+  for (const Move& move : legal) {
+    const int score = search(makeMove(board, move), depth - 1, 1);
+    if (maximizing ? score > bestScore : score < bestScore) {
+      bestScore = score;
+      best = move;
+    }
+  }
+  return best;
+}
+
 }  // namespace stockfih
