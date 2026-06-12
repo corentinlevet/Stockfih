@@ -136,5 +136,27 @@ TEST(QueenMoves, CenterHasTwentySevenMoves) {
   EXPECT_EQ(countFrom(moves, makeSquare(3, 3)), 27);  // d4: 14 rook + 13 bishop
 }
 
+TEST(KingMoves, CenterHasEightMoves) {
+  const Board board = boardFromFen("8/8/8/8/3K4/8/8/8 w - - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  EXPECT_EQ(countFrom(moves, makeSquare(3, 3)), 8);  // d4
+}
+
+TEST(KingMoves, CornerHasThreeMoves) {
+  const Board board = boardFromFen("8/8/8/8/8/8/8/K7 w - - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  const Square a1 = makeSquare(0, 0);
+  EXPECT_TRUE(containsMove(moves, a1, makeSquare(1, 0)));  // b1
+  EXPECT_TRUE(containsMove(moves, a1, makeSquare(0, 1)));  // a2
+  EXPECT_TRUE(containsMove(moves, a1, makeSquare(1, 1)));  // b2
+  EXPECT_EQ(countFrom(moves, a1), 3);
+}
+
+TEST(MoveGen, StartingPositionHasTwentyMoves) {
+  const Board board = Board::startingPosition();
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  EXPECT_EQ(moves.size(), 20u);  // 16 pawn pushes + 4 knight moves
+}
+
 }  // namespace
 }  // namespace stockfih

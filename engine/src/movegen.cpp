@@ -83,6 +83,15 @@ void generateQueenMoves(const Board& board, Square from, Color us,
   generateSlidingMoves(board, from, us, kRookDirections, moves);
 }
 
+// The king steps one square in any of the eight directions. Castling is added
+// in issue #5.
+void generateKingMoves(const Board& board, Square from, Color us,
+                       std::vector<Move>& moves) {
+  static constexpr Offset kKingOffsets[] = {
+      {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}};
+  generateStepMoves(board, from, us, kKingOffsets, moves);
+}
+
 // Pawns push forward one square (two from their starting rank) and capture
 // diagonally forward onto enemy pieces. Promotion and en passant are added in
 // issue #5.
@@ -139,6 +148,9 @@ std::vector<Move> generatePseudoLegalMoves(const Board& board) {
         break;
       case PieceType::Queen:
         generateQueenMoves(board, square, us, moves);
+        break;
+      case PieceType::King:
+        generateKingMoves(board, square, us, moves);
         break;
       default:
         break;
