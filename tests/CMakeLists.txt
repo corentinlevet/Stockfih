@@ -6,6 +6,7 @@ add_executable(stockfih_tests
   piece_test.cpp
   board_test.cpp
   fen_test.cpp
+  movegen_test.cpp
 )
 
 target_link_libraries(stockfih_tests
