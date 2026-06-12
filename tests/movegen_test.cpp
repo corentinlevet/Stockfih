@@ -113,5 +113,22 @@ TEST(BishopMoves, StopsAtFriendlyAndCapturesEnemy) {
   EXPECT_FALSE(containsMove(moves, d4, makeSquare(0, 0)));  // a1: beyond capture
 }
 
+TEST(RookMoves, CenterHasFourteenMoves) {
+  const Board board = boardFromFen("8/8/8/8/3R4/8/8/8 w - - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  EXPECT_EQ(countFrom(moves, makeSquare(3, 3)), 14);  // d4
+}
+
+TEST(RookMoves, StopsAtFriendlyAndCapturesEnemy) {
+  // Rook d4; enemy pawn d7 captured upward, friendly pawn a4 blocks left ray.
+  const Board board = boardFromFen("8/3p4/8/8/P2R4/8/8/8 w - - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  const Square d4 = makeSquare(3, 3);
+  EXPECT_TRUE(containsMove(moves, d4, makeSquare(3, 6)));   // d7 enemy: capture
+  EXPECT_FALSE(containsMove(moves, d4, makeSquare(3, 7)));  // d8: beyond capture
+  EXPECT_TRUE(containsMove(moves, d4, makeSquare(2, 3)));   // c4
+  EXPECT_FALSE(containsMove(moves, d4, makeSquare(0, 3)));  // a4 friendly: blocked
+}
+
 }  // namespace
 }  // namespace stockfih
