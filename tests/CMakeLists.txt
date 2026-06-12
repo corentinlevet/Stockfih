@@ -9,6 +9,7 @@ add_executable(stockfih_tests
   movegen_test.cpp
   gamestate_test.cpp
   special_rules_test.cpp
+  rules_test.cpp
 )
 
 target_link_libraries(stockfih_tests
