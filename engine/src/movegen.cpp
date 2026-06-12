@@ -1,10 +1,42 @@
 #include "stockfih/movegen.hpp"
 
+#include <cstddef>
+
 namespace stockfih {
 namespace {
 
+struct Offset {
+  int file;
+  int rank;
+};
+
 void addMove(std::vector<Move>& moves, Square from, Square to) {
   moves.push_back(Move{from, to, PieceType::None});
+}
+
+// Single-step ("jumping") moves: each offset is tried once. A target is legal
+// if it is on the board and not occupied by a friendly piece. Used by the
+// knight and the king.
+template <std::size_t N>
+void generateStepMoves(const Board& board, Square from, Color us,
+                       const Offset (&offsets)[N], std::vector<Move>& moves) {
+  const int file = fileOf(from);
+  const int rank = rankOf(from);
+  for (const Offset& offset : offsets) {
+    const int targetFile = file + offset.file;
+    const int targetRank = rank + offset.rank;
+    if (!isOnBoard(targetFile, targetRank)) continue;
+    const Square target = makeSquare(targetFile, targetRank);
+    const Piece occupant = board.at(target);
+    if (occupant.isNone() || occupant.color != us) addMove(moves, from, target);
+  }
+}
+
+void generateKnightMoves(const Board& board, Square from, Color us,
+                         std::vector<Move>& moves) {
+  static constexpr Offset kKnightOffsets[] = {
+      {1, 2}, {2, 1}, {2, -1}, {1, -2}, {-1, -2}, {-2, -1}, {-2, 1}, {-1, 2}};
+  generateStepMoves(board, from, us, kKnightOffsets, moves);
 }
 
 // Pawns push forward one square (two from their starting rank) and capture
@@ -51,6 +83,9 @@ std::vector<Move> generatePseudoLegalMoves(const Board& board) {
     switch (piece.type) {
       case PieceType::Pawn:
         generatePawnMoves(board, square, us, moves);
+        break;
+      case PieceType::Knight:
+        generateKnightMoves(board, square, us, moves);
         break;
       default:
         break;

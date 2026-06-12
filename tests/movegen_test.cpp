@@ -68,5 +68,31 @@ TEST(PawnMoves, BlackPawnMovesDownward) {
   EXPECT_EQ(countFrom(moves, e7), 2);
 }
 
+TEST(KnightMoves, CenterHasEightMoves) {
+  const Board board = boardFromFen("8/8/8/8/3N4/8/8/8 w - - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  EXPECT_EQ(countFrom(moves, makeSquare(3, 3)), 8);  // d4
+}
+
+TEST(KnightMoves, CornerHasTwoMoves) {
+  const Board board = boardFromFen("8/8/8/8/8/8/8/N7 w - - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  const Square a1 = makeSquare(0, 0);
+  EXPECT_TRUE(containsMove(moves, a1, makeSquare(1, 2)));  // b3
+  EXPECT_TRUE(containsMove(moves, a1, makeSquare(2, 1)));  // c2
+  EXPECT_EQ(countFrom(moves, a1), 2);
+}
+
+TEST(KnightMoves, BlockedByFriendlyButCapturesEnemy) {
+  // Knight on d4; friendly pawn on e6 blocks one target, enemy pawn on c6 is a
+  // capture target.
+  const Board board = boardFromFen("8/8/2p1P3/8/3N4/8/8/8 w - - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  const Square d4 = makeSquare(3, 3);
+  EXPECT_FALSE(containsMove(moves, d4, makeSquare(4, 5)));  // e6 friendly: blocked
+  EXPECT_TRUE(containsMove(moves, d4, makeSquare(2, 5)));   // c6 enemy: capture
+  EXPECT_EQ(countFrom(moves, d4), 7);
+}
+
 }  // namespace
 }  // namespace stockfih
