@@ -43,7 +43,28 @@ ctest --preset debug
 
 Use the `release` preset for an optimized build.
 
-## Status
+## Testing
 
-Under active development, tracked issue-by-issue. See the GitHub issues for the
-current roadmap.
+The engine is developed test-first with [GoogleTest](https://github.com/google/googletest).
+Run the suite with CTest:
+
+```sh
+ctest --preset debug
+```
+
+Coverage includes board/FEN round-trips, per-piece move generation, the special
+rules, check/checkmate/stalemate detection, search and evaluation, and a
+[perft](https://www.chessprogramming.org/Perft_Results) suite that validates the
+move generator against known node counts (starting position, Kiwipete, and the
+en-passant and promotion reference positions). CI runs the build and tests on
+Linux, Windows, and macOS for every pull request.
+
+## Features
+
+- Headless engine: board representation, FEN parsing/serialization, full legal
+  move generation (including castling, en passant, and promotion), and
+  check/checkmate/stalemate detection.
+- Bot: minimax search with alpha-beta pruning and a positional evaluation
+  (material, center control, mobility).
+- GUI: a raylib chessboard with pieces and mouse interaction — select a piece to
+  see its legal moves and play a full game against the bot.
