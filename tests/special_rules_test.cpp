@@ -81,5 +81,44 @@ TEST(EnPassant, MakeMoveRemovesCapturedPawn) {
   EXPECT_TRUE(after.at(makeSquare(4, 4)).isNone());  // e5 vacated
 }
 
+TEST(Castling, KingSideGenerated) {
+  const Board board = boardFromFen("8/8/8/8/8/8/8/4K2R w K - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  EXPECT_TRUE(containsMove(moves, makeSquare(4, 0), makeSquare(6, 0)));  // O-O
+}
+
+TEST(Castling, QueenSideGenerated) {
+  const Board board = boardFromFen("8/8/8/8/8/8/8/R3K3 w Q - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  EXPECT_TRUE(containsMove(moves, makeSquare(4, 0), makeSquare(2, 0)));  // O-O-O
+}
+
+TEST(Castling, BlockedPathNotGenerated) {
+  const Board board = boardFromFen("8/8/8/8/8/8/8/4KB1R w K - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  EXPECT_FALSE(containsMove(moves, makeSquare(4, 0), makeSquare(6, 0)));
+}
+
+TEST(Castling, NoRightNotGenerated) {
+  const Board board = boardFromFen("8/8/8/8/8/8/8/4K2R w - - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  EXPECT_FALSE(containsMove(moves, makeSquare(4, 0), makeSquare(6, 0)));
+}
+
+TEST(Castling, BlackKingSideGenerated) {
+  const Board board = boardFromFen("4k2r/8/8/8/8/8/8/8 b k - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  EXPECT_TRUE(containsMove(moves, makeSquare(4, 7), makeSquare(6, 7)));  // ...O-O
+}
+
+TEST(Castling, MakeMoveRelocatesRookAndClearsRights) {
+  const Board board = boardFromFen("8/8/8/8/8/8/8/4K2R w K - 0 1");
+  const Board after = makeMove(board, Move{makeSquare(4, 0), makeSquare(6, 0)});
+  EXPECT_EQ(after.at(makeSquare(6, 0)), (Piece{PieceType::King, Color::White}));  // g1
+  EXPECT_EQ(after.at(makeSquare(5, 0)), (Piece{PieceType::Rook, Color::White}));  // f1
+  EXPECT_TRUE(after.at(makeSquare(7, 0)).isNone());  // h1 rook moved
+  EXPECT_EQ(after.castlingRights(), kNoCastling);
+}
+
 }  // namespace
 }  // namespace stockfih
