@@ -5,6 +5,7 @@ add_library(stockfih_engine STATIC
   src/movegen.cpp
   src/gamestate.cpp
   src/rules.cpp
+  src/evaluation.cpp
   src/search.cpp
 )
 

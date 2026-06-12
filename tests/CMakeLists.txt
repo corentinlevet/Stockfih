@@ -10,6 +10,7 @@ add_executable(stockfih_tests
   gamestate_test.cpp
   special_rules_test.cpp
   rules_test.cpp
+  evaluation_test.cpp
   search_test.cpp
 )
 
