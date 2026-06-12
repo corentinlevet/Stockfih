@@ -14,6 +14,23 @@ void addMove(std::vector<Move>& moves, Square from, Square to) {
   moves.push_back(Move{from, to, PieceType::None});
 }
 
+bool isPromotionRank(int rank, Color us) {
+  return us == Color::White ? rank == kBoardSize - 1 : rank == 0;
+}
+
+// Adds a pawn move, expanding it into the four promotion choices when the pawn
+// reaches the last rank.
+void addPawnMove(std::vector<Move>& moves, Square from, Square to, Color us) {
+  if (isPromotionRank(rankOf(to), us)) {
+    for (const PieceType promotion : {PieceType::Queen, PieceType::Rook,
+                                      PieceType::Bishop, PieceType::Knight}) {
+      moves.push_back(Move{from, to, promotion});
+    }
+  } else {
+    addMove(moves, from, to);
+  }
+}
+
 // Single-step ("jumping") moves: each offset is tried once. A target is legal
 // if it is on the board and not occupied by a friendly piece. Used by the
 // knight and the king.
@@ -83,13 +100,41 @@ void generateQueenMoves(const Board& board, Square from, Color us,
   generateSlidingMoves(board, from, us, kRookDirections, moves);
 }
 
-// The king steps one square in any of the eight directions. Castling is added
-// in issue #5.
+// Adds castling moves when the king is on its home square, the relevant right
+// is held, the squares between king and rook are empty, and the rook is home.
+// King safety (not castling out of, through, or into check) is enforced later
+// by the legality filter in issue #6.
+void generateCastlingMoves(const Board& board, Square from, Color us,
+                           std::vector<Move>& moves) {
+  const int homeRank = us == Color::White ? 0 : 7;
+  if (from != makeSquare(4, homeRank)) return;
+
+  const std::uint8_t rights = board.castlingRights();
+  const std::uint8_t kingSide = us == Color::White ? kWhiteKingSide : kBlackKingSide;
+  const std::uint8_t queenSide = us == Color::White ? kWhiteQueenSide : kBlackQueenSide;
+  const Piece ownRook{PieceType::Rook, us};
+
+  if ((rights & kingSide) && board.at(makeSquare(5, homeRank)).isNone() &&
+      board.at(makeSquare(6, homeRank)).isNone() &&
+      board.at(makeSquare(7, homeRank)) == ownRook) {
+    addMove(moves, from, makeSquare(6, homeRank));
+  }
+
+  if ((rights & queenSide) && board.at(makeSquare(1, homeRank)).isNone() &&
+      board.at(makeSquare(2, homeRank)).isNone() &&
+      board.at(makeSquare(3, homeRank)).isNone() &&
+      board.at(makeSquare(0, homeRank)) == ownRook) {
+    addMove(moves, from, makeSquare(2, homeRank));
+  }
+}
+
+// The king steps one square in any of the eight directions, plus castling.
 void generateKingMoves(const Board& board, Square from, Color us,
                        std::vector<Move>& moves) {
   static constexpr Offset kKingOffsets[] = {
       {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}};
   generateStepMoves(board, from, us, kKingOffsets, moves);
+  generateCastlingMoves(board, from, us, moves);
 }
 
 // Pawns push forward one square (two from their starting rank) and capture
@@ -107,7 +152,7 @@ void generatePawnMoves(const Board& board, Square from, Color us,
 
   const Square ahead = makeSquare(file, nextRank);
   if (board.at(ahead).isNone()) {
-    addMove(moves, from, ahead);
+    addPawnMove(moves, from, ahead, us);
     if (rank == startRank) {
       const Square twoAhead = makeSquare(file, rank + 2 * forward);
       if (board.at(twoAhead).isNone()) addMove(moves, from, twoAhead);
@@ -119,7 +164,12 @@ void generatePawnMoves(const Board& board, Square from, Color us,
     if (!isOnBoard(captureFile, nextRank)) continue;
     const Square target = makeSquare(captureFile, nextRank);
     const Piece occupant = board.at(target);
-    if (!occupant.isNone() && occupant.color != us) addMove(moves, from, target);
+    if (!occupant.isNone() && occupant.color != us) {
+      addPawnMove(moves, from, target, us);
+    } else if (occupant.isNone() && target == board.enPassantSquare() &&
+               board.enPassantSquare() != kNoSquare) {
+      addMove(moves, from, target);  // en passant capture
+    }
   }
 }
 
