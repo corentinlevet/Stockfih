@@ -69,5 +69,29 @@ TEST(FindBestMove, FindsMateInOne) {
   EXPECT_TRUE(isCheckmate(after));
 }
 
+TEST(AlphaBeta, MatchesMinimaxScore) {
+  const char* positions[] = {
+      "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1",
+      "q3k3/8/8/8/8/8/8/R6K w - - 0 1",
+  };
+  for (const char* fen : positions) {
+    const Board board = boardFromFen(fen);
+    for (int depth = 1; depth <= 3; ++depth) {
+      EXPECT_EQ(minimax(board, depth), alphaBeta(board, depth))
+          << fen << " depth " << depth;
+    }
+  }
+}
+
+TEST(AlphaBeta, VisitsFewerNodesThanMinimax) {
+  const Board board = boardFromFen(
+      "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1");
+  const SearchStats plain = searchWithStats(board, 4, /*useAlphaBeta=*/false);
+  const SearchStats pruned = searchWithStats(board, 4, /*useAlphaBeta=*/true);
+  EXPECT_EQ(plain.score, pruned.score);
+  EXPECT_LT(pruned.nodes, plain.nodes);
+}
+
 }  // namespace
 }  // namespace stockfih

@@ -32,20 +32,44 @@ int terminalScore(const Board& board, int ply) {
   return stm == Color::White ? -mate : mate;
 }
 
-int search(const Board& board, int depth, int ply) {
+// Depth-limited minimax (White maximizes, Black minimizes). When `prune` is
+// true, alpha-beta cutoffs skip branches that cannot affect the result; the
+// returned score is identical either way. `nodes` counts visited nodes.
+int search(const Board& board, int depth, int ply, int alpha, int beta,
+           bool prune, long long& nodes) {
+  ++nodes;
   const std::vector<Move> legal = generateLegalMoves(board);
   if (legal.empty()) return terminalScore(board, ply);
   if (depth == 0) return evaluate(board);
 
-  const bool maximizing = board.sideToMove() == Color::White;
-  int best = maximizing ? std::numeric_limits<int>::min()
-                        : std::numeric_limits<int>::max();
+  if (board.sideToMove() == Color::White) {
+    int best = std::numeric_limits<int>::min();
+    for (const Move& move : legal) {
+      best = std::max(
+          best, search(makeMove(board, move), depth - 1, ply + 1, alpha, beta, prune,
+                       nodes));
+      if (prune) {
+        alpha = std::max(alpha, best);
+        if (alpha >= beta) break;  // Black would avoid this line
+      }
+    }
+    return best;
+  }
+
+  int best = std::numeric_limits<int>::max();
   for (const Move& move : legal) {
-    const int score = search(makeMove(board, move), depth - 1, ply + 1);
-    best = maximizing ? std::max(best, score) : std::min(best, score);
+    best = std::min(
+        best, search(makeMove(board, move), depth - 1, ply + 1, alpha, beta, prune,
+                     nodes));
+    if (prune) {
+      beta = std::min(beta, best);
+      if (beta <= alpha) break;  // White would avoid this line
+    }
   }
   return best;
 }
+
+constexpr int kInf = std::numeric_limits<int>::max();
 
 }  // namespace
 
@@ -60,7 +84,22 @@ int evaluate(const Board& board) {
   return score;
 }
 
-int minimax(const Board& board, int depth) { return search(board, depth, 0); }
+int minimax(const Board& board, int depth) {
+  long long nodes = 0;
+  return search(board, depth, 0, -kInf, kInf, /*prune=*/false, nodes);
+}
+
+int alphaBeta(const Board& board, int depth) {
+  long long nodes = 0;
+  return search(board, depth, 0, -kInf, kInf, /*prune=*/true, nodes);
+}
+
+SearchStats searchWithStats(const Board& board, int depth, bool useAlphaBeta) {
+  SearchStats stats;
+  stats.score =
+      search(board, depth, 0, -kInf, kInf, useAlphaBeta, stats.nodes);
+  return stats;
+}
 
 Move findBestMove(const Board& board, int depth) {
   const std::vector<Move> legal = generateLegalMoves(board);
@@ -68,13 +107,23 @@ Move findBestMove(const Board& board, int depth) {
 
   const bool maximizing = board.sideToMove() == Color::White;
   Move best = legal.front();
-  int bestScore = maximizing ? std::numeric_limits<int>::min()
-                             : std::numeric_limits<int>::max();
+  int bestScore = maximizing ? -kInf : kInf;
+  long long nodes = 0;
+  int alpha = -kInf;
+  int beta = kInf;
   for (const Move& move : legal) {
-    const int score = search(makeMove(board, move), depth - 1, 1);
+    const int score =
+        search(makeMove(board, move), depth - 1, 1, alpha, beta, /*prune=*/true,
+               nodes);
     if (maximizing ? score > bestScore : score < bestScore) {
       bestScore = score;
       best = move;
+    }
+    // Narrow the window at the root as the best score improves.
+    if (maximizing) {
+      alpha = std::max(alpha, bestScore);
+    } else {
+      beta = std::min(beta, bestScore);
     }
   }
   return best;
