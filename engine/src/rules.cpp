@@ -129,4 +129,12 @@ std::vector<Move> generateLegalMoves(const Board& board) {
   return legal;
 }
 
+bool isCheckmate(const Board& board) {
+  return isInCheck(board, board.sideToMove()) && generateLegalMoves(board).empty();
+}
+
+bool isStalemate(const Board& board) {
+  return !isInCheck(board, board.sideToMove()) && generateLegalMoves(board).empty();
+}
+
 }  // namespace stockfih

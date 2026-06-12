@@ -115,5 +115,27 @@ TEST(LegalMoves, CanCastleWhenPathSafe) {
   EXPECT_TRUE(containsMove(legal, makeSquare(4, 0), makeSquare(6, 0)));
 }
 
+TEST(Endgame, BackRankCheckmate) {
+  // Black king g8 boxed in by its own pawns, checked by the rook on e8.
+  const Board board = boardFromFen("4R1k1/5ppp/8/8/8/8/8/6K1 b - - 0 1");
+  EXPECT_TRUE(isCheckmate(board));
+  EXPECT_FALSE(isStalemate(board));
+  EXPECT_TRUE(generateLegalMoves(board).empty());
+}
+
+TEST(Endgame, Stalemate) {
+  // Black king h8 has no legal move but is not in check.
+  const Board board = boardFromFen("7k/5Q2/6K1/8/8/8/8/8 b - - 0 1");
+  EXPECT_TRUE(isStalemate(board));
+  EXPECT_FALSE(isCheckmate(board));
+  EXPECT_TRUE(generateLegalMoves(board).empty());
+}
+
+TEST(Endgame, StartingPositionIsNeither) {
+  const Board board = Board::startingPosition();
+  EXPECT_FALSE(isCheckmate(board));
+  EXPECT_FALSE(isStalemate(board));
+}
+
 }  // namespace
 }  // namespace stockfih
