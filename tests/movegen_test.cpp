@@ -1,0 +1,72 @@
+#include <gtest/gtest.h>
+
+#include <algorithm>
+
+#include "stockfih/fen.hpp"
+#include "stockfih/movegen.hpp"
+
+namespace stockfih {
+namespace {
+
+// Loads a FEN and aborts the test if it is malformed.
+Board boardFromFen(std::string_view fen) {
+  const std::optional<Board> board = parseFen(fen);
+  EXPECT_TRUE(board.has_value()) << "bad FEN: " << fen;
+  return board.value_or(Board{});
+}
+
+bool containsMove(const std::vector<Move>& moves, Square from, Square to) {
+  return std::any_of(moves.begin(), moves.end(), [&](const Move& move) {
+    return move.from == from && move.to == to;
+  });
+}
+
+// Counts how many generated moves originate from a given square.
+int countFrom(const std::vector<Move>& moves, Square from) {
+  return static_cast<int>(std::count_if(
+      moves.begin(), moves.end(), [&](const Move& move) { return move.from == from; }));
+}
+
+TEST(PawnMoves, SingleAndDoublePushFromStart) {
+  const Board board = boardFromFen("8/8/8/8/8/8/4P3/8 w - - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  const Square e2 = makeSquare(4, 1);
+  EXPECT_TRUE(containsMove(moves, e2, makeSquare(4, 2)));  // e2-e3
+  EXPECT_TRUE(containsMove(moves, e2, makeSquare(4, 3)));  // e2-e4
+  EXPECT_EQ(countFrom(moves, e2), 2);
+}
+
+TEST(PawnMoves, NoDoublePushAwayFromStart) {
+  const Board board = boardFromFen("8/8/8/8/8/4P3/8/8 w - - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  const Square e3 = makeSquare(4, 2);
+  EXPECT_TRUE(containsMove(moves, e3, makeSquare(4, 3)));  // e3-e4
+  EXPECT_EQ(countFrom(moves, e3), 1);
+}
+
+TEST(PawnMoves, BlockedPawnDoesNotMove) {
+  const Board board = boardFromFen("8/8/8/8/8/4p3/4P3/8 w - - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  EXPECT_EQ(countFrom(moves, makeSquare(4, 1)), 0);
+}
+
+TEST(PawnMoves, DiagonalCaptures) {
+  const Board board = boardFromFen("8/8/8/8/8/3p1p2/4P3/8 w - - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  const Square e2 = makeSquare(4, 1);
+  EXPECT_TRUE(containsMove(moves, e2, makeSquare(3, 2)));  // exd3
+  EXPECT_TRUE(containsMove(moves, e2, makeSquare(5, 2)));  // exf3
+  EXPECT_EQ(countFrom(moves, e2), 4);  // two pushes + two captures
+}
+
+TEST(PawnMoves, BlackPawnMovesDownward) {
+  const Board board = boardFromFen("8/4p3/8/8/8/8/8/8 b - - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  const Square e7 = makeSquare(4, 6);
+  EXPECT_TRUE(containsMove(moves, e7, makeSquare(4, 5)));  // e7-e6
+  EXPECT_TRUE(containsMove(moves, e7, makeSquare(4, 4)));  // e7-e5
+  EXPECT_EQ(countFrom(moves, e7), 2);
+}
+
+}  // namespace
+}  // namespace stockfih
