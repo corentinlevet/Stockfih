@@ -7,6 +7,7 @@ add_executable(stockfih_tests
   board_test.cpp
   fen_test.cpp
   movegen_test.cpp
+  gamestate_test.cpp
 )
 
 target_link_libraries(stockfih_tests

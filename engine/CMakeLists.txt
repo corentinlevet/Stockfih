@@ -3,6 +3,7 @@ add_library(stockfih_engine STATIC
   src/board.cpp
   src/fen.cpp
   src/movegen.cpp
+  src/gamestate.cpp
 )
 
 target_include_directories(stockfih_engine
