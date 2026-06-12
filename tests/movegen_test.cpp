@@ -94,5 +94,24 @@ TEST(KnightMoves, BlockedByFriendlyButCapturesEnemy) {
   EXPECT_EQ(countFrom(moves, d4), 7);
 }
 
+TEST(BishopMoves, CenterHasThirteenMoves) {
+  const Board board = boardFromFen("8/8/8/8/3B4/8/8/8 w - - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  EXPECT_EQ(countFrom(moves, makeSquare(3, 3)), 13);  // d4
+}
+
+TEST(BishopMoves, StopsAtFriendlyAndCapturesEnemy) {
+  // Bishop d4; friendly pawn f6 stops the up-right ray before f6; enemy pawn b2
+  // is captured on the down-left ray.
+  const Board board = boardFromFen("8/8/5P2/8/3B4/8/1p6/8 w - - 0 1");
+  const std::vector<Move> moves = generatePseudoLegalMoves(board);
+  const Square d4 = makeSquare(3, 3);
+  EXPECT_TRUE(containsMove(moves, d4, makeSquare(4, 4)));   // e5
+  EXPECT_FALSE(containsMove(moves, d4, makeSquare(5, 5)));  // f6 friendly: blocked
+  EXPECT_TRUE(containsMove(moves, d4, makeSquare(2, 2)));   // c3
+  EXPECT_TRUE(containsMove(moves, d4, makeSquare(1, 1)));   // b2 enemy: capture
+  EXPECT_FALSE(containsMove(moves, d4, makeSquare(0, 0)));  // a1: beyond capture
+}
+
 }  // namespace
 }  // namespace stockfih

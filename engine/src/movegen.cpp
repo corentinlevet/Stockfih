@@ -39,6 +39,37 @@ void generateKnightMoves(const Board& board, Square from, Color us,
   generateStepMoves(board, from, us, kKnightOffsets, moves);
 }
 
+// Sliding moves: walk along each direction until leaving the board or hitting a
+// piece. A friendly piece blocks; an enemy piece is captured and then blocks.
+// Used by the bishop, rook, and queen.
+template <std::size_t N>
+void generateSlidingMoves(const Board& board, Square from, Color us,
+                          const Offset (&directions)[N], std::vector<Move>& moves) {
+  for (const Offset& direction : directions) {
+    int targetFile = fileOf(from) + direction.file;
+    int targetRank = rankOf(from) + direction.rank;
+    while (isOnBoard(targetFile, targetRank)) {
+      const Square target = makeSquare(targetFile, targetRank);
+      const Piece occupant = board.at(target);
+      if (occupant.isNone()) {
+        addMove(moves, from, target);
+      } else {
+        if (occupant.color != us) addMove(moves, from, target);
+        break;
+      }
+      targetFile += direction.file;
+      targetRank += direction.rank;
+    }
+  }
+}
+
+constexpr Offset kBishopDirections[] = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+
+void generateBishopMoves(const Board& board, Square from, Color us,
+                         std::vector<Move>& moves) {
+  generateSlidingMoves(board, from, us, kBishopDirections, moves);
+}
+
 // Pawns push forward one square (two from their starting rank) and capture
 // diagonally forward onto enemy pieces. Promotion and en passant are added in
 // issue #5.
@@ -86,6 +117,9 @@ std::vector<Move> generatePseudoLegalMoves(const Board& board) {
         break;
       case PieceType::Knight:
         generateKnightMoves(board, square, us, moves);
+        break;
+      case PieceType::Bishop:
+        generateBishopMoves(board, square, us, moves);
         break;
       default:
         break;
