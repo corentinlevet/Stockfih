@@ -13,6 +13,8 @@ constexpr ::Color kDarkSquare = {181, 136, 99, 255};
 constexpr ::Color kLabelColor = {60, 60, 60, 255};
 constexpr ::Color kWhitePiece = {245, 245, 245, 255};
 constexpr ::Color kBlackPiece = {30, 30, 30, 255};
+constexpr ::Color kSelectColor = {246, 246, 105, 200};  // selected square
+constexpr ::Color kTargetColor = {60, 60, 60, 130};     // move destination dot
 constexpr int kLabelFontSize = 20;
 
 void drawCharacter(char label, int x, int y) {
@@ -98,6 +100,32 @@ void drawPieces(const BoardLayout& layout, const Board& board) {
     DrawText(text, static_cast<int>(center.x) - textWidth / 2,
              static_cast<int>(center.y) - fontSize / 2, fontSize, label);
   }
+}
+
+void drawHighlights(const BoardLayout& layout, Square selected,
+                    const std::vector<Move>& moves) {
+  if (isValidSquare(selected)) {
+    const Vector2 topLeft =
+        squareTopLeft(layout, fileOf(selected), rankOf(selected));
+    const Rectangle rect{topLeft.x, topLeft.y,
+                         static_cast<float>(layout.squareSize),
+                         static_cast<float>(layout.squareSize)};
+    DrawRectangleRec(rect, kSelectColor);
+  }
+
+  const float dotRadius = static_cast<float>(layout.squareSize) * 0.15f;
+  for (const Move& move : moves) {
+    const Vector2 topLeft = squareTopLeft(layout, fileOf(move.to), rankOf(move.to));
+    const Vector2 center{topLeft.x + layout.squareSize / 2.0f,
+                         topLeft.y + layout.squareSize / 2.0f};
+    DrawCircleV(center, dotRadius, kTargetColor);
+  }
+}
+
+void drawStatus(const BoardLayout& layout, const char* text) {
+  // Drawn in the top margin above the board.
+  const int y = (layout.originY - kLabelFontSize) / 2;
+  DrawText(text, layout.originX, y > 0 ? y : 4, kLabelFontSize, kLabelColor);
 }
 
 }  // namespace stockfih::gui

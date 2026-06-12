@@ -7,6 +7,7 @@ add_library(stockfih_engine STATIC
   src/rules.cpp
   src/evaluation.cpp
   src/search.cpp
+  src/game.cpp
 )
 
 target_include_directories(stockfih_engine
